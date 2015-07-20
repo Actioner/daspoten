@@ -1,0 +1,19 @@
+{
+  "mongo": {
+    "db": "mongodb://localhost:27017/"
+  },
+  "facebook": {
+    "appId": "105491079798427",
+    "appSecret": "253e7cfd208346cc9320039caa0bd96a",
+    "callbackUrl": "http://localhost:3000/auth/facebook/callback"
+  },
+  "auth": {
+    "secret": "haibu+daspoten"
+  },
+  "bcrypt": {
+    "saltWorkFactor": 10
+  },
+  "jwt": {
+    "expiresInMinutes": 5
+  }
+}

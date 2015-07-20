@@ -1,0 +1,6 @@
+extends layout
+
+block content
+    h1= Welcome
+    p You're logged in as #{user.displayName}
+    a(href='/auth') Logout

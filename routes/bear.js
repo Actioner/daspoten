@@ -7,8 +7,17 @@ var validator = new BearValidator();
 
 router.param('id', function(req, res, next, id) {
     Bear.findById(id, function(err, bear) {
-        if (err)
+        if (err) {
             res.send(err);
+            return;
+        }
+        if (bear === null) {
+            res.status(404)
+                .send('Not found');
+            return;
+        }
+
+
         req.bear = bear;
         next();
     });
