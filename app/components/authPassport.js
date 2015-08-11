@@ -71,6 +71,7 @@ passport.use(
                         done(err, false);
                     }
                 } else {
+                    req.user = decoded;
                     return done(null, decoded, {scope: 'all'})
                 }
             });

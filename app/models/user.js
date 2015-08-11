@@ -7,21 +7,14 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
-    facebookId: {
-        type: String
-    },
-    displayName: {
-        type: String
-    },
-    email: {
-        type: String
-    },
-    password: {
-        type: String
-    },
+    facebookId: String,
+    displayName: String,
+    email: String,
+    password: String,
     provider: {
         type: String, default: 'local'
-    }
+    },
+    devices : [{ type: Schema.Types.ObjectId, ref: 'Device' }]
 });
 
 UserSchema.statics.findOrCreateFacebook = function (filters, cb) {

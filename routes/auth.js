@@ -20,6 +20,7 @@ router.route('/login')
                 return res.status(401).json({error: 'Invalid Username or password'});
             }
             var userToSign = {};
+            userToSign._id = user._id;
             userToSign.displayName = user.displayName;
             userToSign.provider = user.provider;
             userToSign.email = user.email;
@@ -51,6 +52,7 @@ router.get('/facebook/callback', function (req, res, next) {
             res.status(401).json({message: "Error occured: " + err});
         } else {
             var userToSign = {};
+            userToSign._id = user._id;
             userToSign.displayName = user.displayName;
             userToSign.provider = user.provider;
             userToSign.facebookId = user.facebookId;

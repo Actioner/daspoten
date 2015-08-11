@@ -14,6 +14,9 @@
     "saltWorkFactor": 10
   },
   "jwt": {
-    "expiresInMinutes": 5
+    "expiresInMinutes": 30
+  },
+  "location": {
+    "deviceExpiresAtSeconds": 86400
   }
 }
