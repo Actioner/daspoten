@@ -6,6 +6,6 @@ var nconf = require('nconf');
 nconf
     .argv()
     .env()
-    .file({ file: './app/config/default.json' });
+    .file({ file: __dirname + '/default.json' });
 
 module.exports = nconf;

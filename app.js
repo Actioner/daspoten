@@ -12,7 +12,6 @@ var routes = require('./routes/index');
 var api = require('./routes/api');
 var auth = require('./routes/auth');
 var profile = require('./routes/profile');
-//var bearApi = require('./routes/bear');
 
 var app = express();
 
@@ -36,7 +35,6 @@ app.use('/', routes);
 app.use('/profile', profile);
 app.use('/auth', auth);
 app.use('/api', api);
-//app.use('/api/bears', authPassport.authenticate('bearer', {session: false}), bearApi);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
