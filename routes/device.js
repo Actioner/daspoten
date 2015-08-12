@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var config = require('../app/config/config');
 var Device = require('../app/models/device');
 var DeviceValidator = require('../app/validators/device'),
     LocationValidator = require('../app/validators/location');
@@ -29,6 +30,7 @@ router.route('/')
         self.device = new Device();      // create a new instance of the Device model
         self.device.code = req.body.code;  // set the devices name (comes from the request)
         self.device.user = req.user;
+        self.device.parking = req.body.parking;
 
         validator.validate(self.device,
             function () {
@@ -36,7 +38,6 @@ router.route('/')
                 self.device.save(function(err, dev) {
                     if (err)
                         res.json(err);
-
                     res.json({ _id: dev._id });
                 });
             },
@@ -64,20 +65,23 @@ router.route('/:id')
     // update the device with this id (accessed at PUT http://localhost:8080/api/devices/:device_id)
     .put(function(req, res) {
         var self = this;
-        self.deviceLocation = new Location.DeviceLocation();
-        deviceLocation.coordinates = [req.body.lat, req.body.lng];
         self.device = req.device;
         self.device.parking = req.body.parking;
+
+        self.deviceLocation = new Location.DeviceLocation();
+        deviceLocation.coordinates = [req.body.lat, req.body.lng];
         deviceLocation.device = self.device;
 
         locationValidator.validate(self.deviceLocation,
             function () {
                 // save the location and check for errors
-                self.deviceLocation.save(function(err) {
+                self.deviceLocation.save(function(err, loc) {
                     if (err)
                         res.json(err);
-
+                    self.device.location.coordinates = loc.coordinates;
+                    self.device.location.when = loc.when;
                     self.device.save();
+
                     res.sendStatus(200);
                 });
             },
@@ -91,19 +95,21 @@ router.route('/:id')
 router.route('/:id/near')
     // get near devices with that id (accessed at GET http://localhost:8080/api/devices/:device_id)
     .get(function(req, res) {
-//TODO
-        Device.findByParking(true, function(err, device) {
-            if (err) {
-                res.send(err);
-                return;
-            }
-            if (device === null) {
-                res.sendStatus(404);
-                return;
-            }
-            req.device = device;
-            next();
-        });
+        Device.
+            find({ parking: true }).
+            where('user').ne(req.user).
+            where('location.when').gt(new Date(new Date() - config.get("location:deviceAliveInSeconds") * 1000)).
+            where('location.coordinates').near({
+                center: req.device.location.coordinates,
+                spherical: true,
+                maxDistance: config.get("location:deviceNearInMeters") }).
+            select('code location').
+            exec(function(err, devices) {
+                    if (err)
+                        res.json(err);
+
+                    res.json(devices);
+                });
     });
 
 module.exports = router;

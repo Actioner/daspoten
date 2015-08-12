@@ -10,7 +10,12 @@ var DeviceSchema = new Schema({
     brand: String,
     model: String,
     parking: Boolean,
-    user: { type: Schema.Types.ObjectId, ref: 'User' }
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    location: {
+        coordinates: { type: [Number], default: [0, 0], index: '2dsphere'},
+        when: { type: Date, default: Date.now }
+    }// { type: Schema.Types.ObjectId, ref: 'DeviceLocation' }
 });
+DeviceSchema.index({'location.coordinates':"2dsphere"});
 
 module.exports = mongoose.model('Device', DeviceSchema);

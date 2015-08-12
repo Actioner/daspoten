@@ -17,6 +17,8 @@
     "expiresInMinutes": 30
   },
   "location": {
-    "deviceExpiresAtSeconds": 86400
+    "deviceExpiresAtSeconds": 86400,
+    "deviceNearInMeters": 500,
+    "deviceAliveInSeconds": 60
   }
 }

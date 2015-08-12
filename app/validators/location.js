@@ -4,12 +4,10 @@ var ValidatorBase = require('./validatorBase'),
 var LocationValidator = function (){
     var self = this;
     validatorBase.schema = {
-        lat: 'required|min:-90|max:90',
-        lng: 'required|min:-180|max:180'
+        coordinates: 'required'
     };
     validatorBase.messages = {
-        'lat.required': 'Latitude is required',
-        'lng.required': 'Longitude is required'
+        'coordinates.required': 'Coordinates are required'
     };
 
     self.validate = validatorBase.validate;

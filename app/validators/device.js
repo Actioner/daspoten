@@ -4,10 +4,14 @@ var ValidatorBase = require('./validatorBase'),
 var DeviceValidator = function (){
     var self = this;
     validatorBase.schema = {
-        code: 'required'
+        code: 'required',
+        user: 'required',
+        parking: 'required'
     };
     validatorBase.messages = {
-        'code.required': 'Code is required'
+        'code.required': 'Code is required',
+        'user.required': 'User is required',
+        'parking.required': 'Parking is required'
     };
 
     self.validate = validatorBase.validate;
