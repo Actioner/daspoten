@@ -66,8 +66,6 @@ router.route('/:id')
     .put(function(req, res) {
         var self = this;
         self.device = req.device;
-        self.device.parking = req.body.parking;
-
         self.deviceLocation = new Location.DeviceLocation();
         deviceLocation.coordinates = [req.body.lat, req.body.lng];
         deviceLocation.device = self.device;

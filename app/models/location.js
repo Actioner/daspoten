@@ -25,9 +25,20 @@ var DeviceLocationSchema = new LocationSchema({
     }
 });
 
+var SpotLocationSchema = new LocationSchema({
+    spot:  { type: Schema.Types.ObjectId, ref: 'spot' },
+    when: {
+        type: Date,
+        default: Date.now,
+        expires: config.get('location:spotExpiresAtSeconds')
+    }
+});
+
 var DeviceLocation = mongoose.model('DeviceLocation', DeviceLocationSchema);
+var SpotLocation = mongoose.model('SpotLocation', SpotLocationSchema);
 //var Boss = Person.discriminator('Boss', BossSchema);
 
 module.exports = {
-    'DeviceLocation': DeviceLocation
+    'DeviceLocation': DeviceLocation,
+    'SpotLocation': SpotLocation,
 };

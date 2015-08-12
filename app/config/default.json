@@ -19,6 +19,9 @@
   "location": {
     "deviceExpiresAtSeconds": 86400,
     "deviceNearInMeters": 500,
-    "deviceAliveInSeconds": 60
+    "deviceAliveInSeconds": 60,
+    "spotExpiresAtSeconds": 7200,
+    "spotNearInMeters": 500,
+    "spotAliveInSeconds": 3600
   }
 }

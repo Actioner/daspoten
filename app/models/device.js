@@ -9,13 +9,13 @@ var DeviceSchema = new Schema({
     code: String,
     brand: String,
     model: String,
-    parking: Boolean,
+    parking: {type: Boolean, default: false },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     location: {
         coordinates: { type: [Number], default: [0, 0], index: '2dsphere'},
         when: { type: Date, default: Date.now }
+        //TODO: mongoose 4.2 will have one-to-one support
     }// { type: Schema.Types.ObjectId, ref: 'DeviceLocation' }
 });
-DeviceSchema.index({'location.coordinates':"2dsphere"});
 
 module.exports = mongoose.model('Device', DeviceSchema);

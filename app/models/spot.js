@@ -5,13 +5,19 @@ var mongoose = require('mongoose')
     Location = require('./location');
 var Schema = mongoose.Schema;
 
+//TODO: mongoose 4.2 will have one-to-one support
 var SpotSchema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
-    location: {
-        coordinates: { type: [Number], default: [0, 0], index: '2dsphere'},
-        when: { type: Date, default: Date.now }
-    }// { type: Schema.Types.ObjectId, ref: 'SpotLocation' }
+    declared:
+    {
+        by: { type: Schema.Types.ObjectId, ref: 'User' },
+        when: { type: Date, default: Date.now, expires: config.get('location:spotExpiresAtSeconds') }
+    },
+    taken:
+    {
+        by: { type: Schema.Types.ObjectId, ref: 'User' },
+        when: { type: Date, default: Date.now, expires: config.get('location:spotExpiresAtSeconds') }
+    },
+    coordinates: { type: [Number], default: [0, 0], index: '2dsphere' }
 });
-SpotSchema.index({'location.coordinates':"2dsphere"});
 
 module.exports = mongoose.model('Spot', SpotSchema);
