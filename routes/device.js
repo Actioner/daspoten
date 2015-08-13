@@ -67,6 +67,7 @@ router.route('/:id')
         var self = this;
         self.device = req.device;
         self.deviceLocation = new Location.DeviceLocation();
+        deviceLocation.when = Date.now();
         deviceLocation.coordinates = [req.body.lat, req.body.lng];
         deviceLocation.device = self.device;
 
@@ -90,7 +91,7 @@ router.route('/:id')
         );
     });
 
-router.route('/:id/near')
+router.route('/near/:id')
     // get near devices with that id (accessed at GET http://localhost:8080/api/devices/:device_id)
     .get(function(req, res) {
         Device.

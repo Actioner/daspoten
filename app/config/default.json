@@ -23,5 +23,8 @@
     "spotExpiresAtSeconds": 7200,
     "spotNearInMeters": 500,
     "spotAliveInSeconds": 3600
+  },
+  "spot": {
+    "downVotesLimit": 3
   }
 }

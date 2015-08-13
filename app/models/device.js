@@ -13,7 +13,7 @@ var DeviceSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     location: {
         coordinates: { type: [Number], default: [0, 0], index: '2dsphere'},
-        when: { type: Date, default: Date.now }
+        when: { type: Date }
         //TODO: mongoose 4.2 will have one-to-one support
     }// { type: Schema.Types.ObjectId, ref: 'DeviceLocation' }
 });
