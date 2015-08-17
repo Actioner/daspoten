@@ -24,21 +24,6 @@ router.param('id', function(req, res, next, id) {
     });
 });
 
-router.param('deviceId', function(req, res, next, id) {
-    Device.findById(id, function(err, device) {
-        if (err) {
-            res.send(err);
-            return;
-        }
-        if (device === null) {
-            res.sendStatus(404);
-            return;
-        }
-        req.device = device;
-        next();
-    });
-});
-
 router.route('/')
     // create a spot (accessed at POST http://localhost:8080/api/spots)
     .post(function(req, res) {
@@ -48,7 +33,7 @@ router.route('/')
             by: req.user,
             when: Date.now()
         };
-        self.spot.coordinates = [req.body.lat, req.body.lng];
+        self.spot.coordinates = [req.body.lng, req.body.lat];
 
         validator.validate(self.spot,
             function () {
@@ -67,48 +52,36 @@ router.route('/')
     })
     // get all the spots (accessed at GET http://localhost:8080/api/spots)
     .get(function(req, res) {
-        Spot.find(function(err, spots) {
-            if (err)
-                res.json(err);
+        var lat = req.query.lat || 0;
+        var lng = req.query.lng || 0;
 
-            res.json(spots);
-        });
+        //TODO near query not working
+        Spot.
+            find(
+            {
+                coordinates:
+                { $near :
+                {
+                    $geometry: { type: "Point",  coordinates: [ lng, lat ] },
+                    $maxDistance: config.get("location:spotNearInMeters")
+                }
+                }
+            }).
+            where('taken').equals(null).
+            where('downVotes').lt(config.get("spot:downVotesLimit")).
+            where('declared.when').gt(new Date(new Date() - config.get("location:spotAliveInSeconds") * 1000)).
+            exec(function(err, spots) {
+                if (err)
+                    res.json(err);
+
+                res.json(spots);
+            });
     });
 
 router.route('/:id')
     // get the spot with that id (accessed at GET http://localhost:8080/api/spots/:spot_id)
     .get(function(req, res) {
         res.json(req.spot);
-    });
-
-router.route('/near/:deviceId')
-    // get near spots with that id (accessed at GET http://localhost:8080/api/spots/near/:device_id)
-    .get(function(req, res) {
-        console.log(new Date(new Date() - config.get("location:spotAliveInSeconds") * 1000));
-
-        Spot.find(function(err, spots) {
-            if (err)
-                res.json(err);
-
-            for (i = 0; i < spots.length; i++)
-                console.log(spots[i].declared.when);
-        });
-
-        //TODO near query not working
-        Spot.
-            find({ taken: null}).
-            where('downVotes').lt(config.get("spot:downVotesLimit")).
-            where('declared.when').gt(new Date(new Date() - config.get("location:spotAliveInSeconds") * 1000)).
-            where('coordinates').near({
-                center: [10,21],//req.device.location.coordinates,
-                spherical: true,
-                maxDistance: config.get("location:spotNearInMeters") }).
-            exec(function(err, spots) {
-                    if (err)
-                        res.json(err);
-
-                    res.json(spots);
-                });
     });
 
 router.route('/:id/take')
@@ -118,7 +91,7 @@ router.route('/:id/take')
         if (req.spot.declared.by.equals(req.user._id)) {
             res.json({
                 "field": "taken",
-                "message": "Declarer an taker cannot be the same",
+                "message": "Declarer and taker cannot be the same",
                 "rule": "business"
             });
             return;

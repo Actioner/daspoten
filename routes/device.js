@@ -49,12 +49,30 @@ router.route('/')
     })
     // get all the devices (accessed at GET http://localhost:8080/api/devices)
     .get(function(req, res) {
-        Device.find(function(err, devices) {
-            if (err)
-                res.json(err);
+        var lat = req.query.lat || 0;
+        var lng = req.query.lng || 0;
 
-            res.json(devices);
-        });
+        Device.
+            find(
+            {
+                'location.coordinates':
+                { $near :
+                    {
+                        $geometry: { type: "Point",  coordinates: [ lng, lat ] },
+                        $maxDistance: config.get("location:deviceNearInMeters")
+                    }
+                }
+            }).
+            where('parking').equals(true).
+            where('user').ne(req.user).
+            where('location.when').gt(new Date(new Date() - config.get("location:deviceAliveInSeconds") * 1000)).
+            select('id code location').
+            exec(function(err, devices) {
+                if (err)
+                    res.json(err);
+
+                res.json(devices);
+            });
     });
 
 router.route('/:id')
@@ -68,7 +86,7 @@ router.route('/:id')
         self.device = req.device;
         self.deviceLocation = new Location.DeviceLocation();
         deviceLocation.when = Date.now();
-        deviceLocation.coordinates = [req.body.lat, req.body.lng];
+        deviceLocation.coordinates = [req.body.lng, req.body.lat];
         deviceLocation.device = self.device;
 
         locationValidator.validate(self.deviceLocation,
@@ -89,26 +107,6 @@ router.route('/:id')
                     res.json(err);
             }
         );
-    });
-
-router.route('/near/:id')
-    // get near devices with that id (accessed at GET http://localhost:8080/api/devices/:device_id)
-    .get(function(req, res) {
-        Device.
-            find({ parking: true }).
-            where('user').ne(req.user).
-            where('location.when').gt(new Date(new Date() - config.get("location:deviceAliveInSeconds") * 1000)).
-            where('location.coordinates').near({
-                center: req.device.location.coordinates,
-                spherical: true,
-                maxDistance: config.get("location:deviceNearInMeters") }).
-            select('code location').
-            exec(function(err, devices) {
-                    if (err)
-                        res.json(err);
-
-                    res.json(devices);
-                });
     });
 
 module.exports = router;
