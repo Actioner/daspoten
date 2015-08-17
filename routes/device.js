@@ -1,12 +1,14 @@
 var express = require('express');
 var router = express.Router();
 var config = require('../app/config/config');
+var Util = require('../app/components/util');
 var Device = require('../app/models/device');
 var DeviceValidator = require('../app/validators/device'),
     LocationValidator = require('../app/validators/location');
 
 var validator = new DeviceValidator();
 var locationValidator = new LocationValidator();
+var util = new Util();
 
 router.param('id', function(req, res, next, id) {
     Device.findById(id, function(err, device) {
@@ -31,6 +33,7 @@ router.route('/')
         self.device.code = req.body.code;  // set the devices name (comes from the request)
         self.device.user = req.user;
         self.device.parking = req.body.parking;
+        self.device.bearing = 0;
 
         validator.validate(self.device,
             function () {
@@ -95,8 +98,11 @@ router.route('/:id')
                 self.deviceLocation.save(function(err, loc) {
                     if (err)
                         res.json(err);
+
+                    var bearing = util.calculateBearing(loc.coordinates, self.device.location.coordinates);
                     self.device.location.coordinates = loc.coordinates;
                     self.device.location.when = loc.when;
+                    self.device.bearing = bearing;
                     self.device.save();
 
                     res.sendStatus(200);
