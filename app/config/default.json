@@ -22,6 +22,7 @@
     "deviceAliveInSeconds": 60,
     "spotExpiresAtSeconds": 7200,
     "spotNearInMeters": 500,
+    "spotTakeNearestInMeters": 10,
     "spotAliveInSeconds": 3600
   },
   "spot": {

@@ -55,16 +55,15 @@ router.route('/')
         var lat = req.query.lat || 0;
         var lng = req.query.lng || 0;
 
-        //TODO near query not working
         Spot.
             find(
             {
                 coordinates:
                 { $near :
-                {
-                    $geometry: { type: "Point",  coordinates: [ lng, lat ] },
-                    $maxDistance: config.get("location:spotNearInMeters")
-                }
+                    {
+                        $geometry: { type: "Point",  coordinates: [ lng, lat ] },
+                        $maxDistance: config.get("location:spotNearInMeters")
+                    }
                 }
             }).
             where('taken').equals(null).
@@ -140,6 +139,49 @@ router.route('/:id/notthere')
                     res.json(err);
             }
         );
+    });
+
+router.route('/takenearest')
+    .put(function(req, res) {
+        var self = this;
+        var lat = req.body.lat || 0;
+        var lng = req.body.lng || 0;
+
+        Spot.
+            find(
+            {
+                coordinates: {
+                    $near: {
+                        $geometry: {type: "Point", coordinates: [lng, lat]},
+                        $maxDistance: config.get("location:spotTakeNearestInMeters")
+                    }
+                }
+            }).
+            where('declared.by').ne(req.user._id).
+            where('taken').equals(null).
+            where('downVotes').lt(config.get("spot:downVotesLimit")).
+            where('declared.when').gt(new Date(new Date() - config.get("location:spotAliveInSeconds") * 1000)).
+            exec(function (err, spots) {
+                if (err)
+                    res.json(err);
+
+                if (spots.length == 0) {
+                    res.sendStatus(200);
+                    return;
+                }
+                var spotToTake = spots[0];
+                spotToTake.taken = {
+                    by: req.user,
+                    when: Date.now()
+                };
+
+                // save the location and check for errors
+                spotToTake.save(function (err) {
+                    if (err)
+                        res.json(err);
+                    res.json(spotToTake);
+                });
+            });
     });
 
 module.exports = router;
