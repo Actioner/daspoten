@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var config = require('../app/config/config');
 var Spot = require('../app/models/spot');
+var User = require('../app/models/user');
 var Device = require('../app/models/device');
 var SpotValidator = require('../app/validators/spot'),
     LocationValidator = require('../app/validators/location');
@@ -55,8 +56,8 @@ router.route('/')
         var lat = req.query.lat || 0;
         var lng = req.query.lng || 0;
 
-        Spot.
-            find(
+        Spot
+            .find(
             {
                 coordinates:
                 { $near :
@@ -65,11 +66,12 @@ router.route('/')
                         $maxDistance: config.get("location:spotNearInMeters")
                     }
                 }
-            }).
-            where('taken').equals(null).
-            where('downVotes').lt(config.get("spot:downVotesLimit")).
-            where('declared.when').gt(new Date(new Date() - config.get("location:spotAliveInSeconds") * 1000)).
-            exec(function(err, spots) {
+            })
+            .where('valid').equals(true)
+            .where('taken').equals(null)
+            .where('downVotesCount').lt(config.get("spot:downVotesLimit"))
+            .where('declared.when').gt(new Date(new Date() - config.get("location:spotAliveInSeconds") * 1000))
+            .exec(function(err, spots) {
                 if (err)
                     res.json(err);
 
@@ -118,32 +120,63 @@ router.route('/:id/take')
     });
 
 
-router.route('/:id/notthere')
-    // down vote spots with that id (accessed at PUT http://localhost:8080/api/spots/:spot_id/notthere)
+router.route('/:id/invalid')
+    // take spot with that id (accessed at PUT http://localhost:8080/api/spots/:spot_id/take)
     .put(function(req, res) {
         var self = this;
         self.spot = req.spot;
-        ++self.spot.downVotes;
 
-        validator.validate(self.spot,
-            function () {
-                // save the location and check for errors
-                self.spot.save(function(err) {
-                    if (err)
-                        res.json(err);
-                    res.sendStatus(200);
+        if (!req.user.admin)
+            return res.json({
+                "field": "valid",
+                "message": "Not enough permissions!",
+                "rule": "business"
+            });
+
+        self.spot.valid = false;
+        self.spot.save(function(err) {
+            if (err)
+                res.json(err);
+            res.sendStatus(200);
+        });
+    });
+
+router.route('/:id/notthere')
+    // down vote spots with that id (accessed at PUT http://localhost:8080/api/spots/:id/notthere)
+    .put(function(req, res) {
+        var self = this;
+        self.spot = req.spot;
+
+        if (self.spot.declared.by == req.user._id)
+            return res.json({
+                "field": "downVotes",
+                "message": "Cannot mark own spot as not there",
+                "rule": "business"
+            });
+
+        User.findOne({email: req.body.email}, function(err, user) {
+            if (err)
+                return res.json(err);
+
+            if (self.spot.downVotes.indexOf(user._id) >= 0)
+                return res.json({
+                    "field": "downVotes",
+                    "message": "Already marked the spot as not there",
+                    "rule": "business"
                 });
-            },
-            function(err) {
+
+            ++self.spot.downVotesCount;
+            self.spot.downVotes.push(user._id);
+            self.spot.save(function(err) {
                 if (err)
                     res.json(err);
-            }
-        );
+                res.sendStatus(200);
+            });
+        });
     });
 
 router.route('/takenearest')
     .put(function(req, res) {
-        var self = this;
         var lat = req.body.lat || 0;
         var lng = req.body.lng || 0;
 

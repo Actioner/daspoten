@@ -12,6 +12,7 @@ var DeviceSchema = new Schema({
     bearing: Number,
     parking: {type: Boolean, default: false },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
+    type: { type: String, enum: ['driver', 'spotter'], default: 'driver' },
     location: {
         coordinates: { type: [Number], default: [0, 0], index: '2dsphere'},
         when: { type: Date }

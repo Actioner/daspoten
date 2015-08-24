@@ -19,7 +19,9 @@ var SpotSchema = new Schema({
         when: { type: Date, expires: config.get('location:spotExpiresAtSeconds') }
     },
     coordinates: { type: [Number], default: [0, 0], index: '2dsphere' },
-    downVotes: { type: Number, default: 0 }
+    downVotes:  [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    downVotesCount: { type: Number, default: 0 },
+    valid: { type: Boolean, default: true },
 });
 
 module.exports = mongoose.model('Spot', SpotSchema);

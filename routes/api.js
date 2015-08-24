@@ -1,8 +1,7 @@
 var express = require('express'),
     router = express.Router(),
     authPassport = require('../app/components/authPassport');
-var bearApi = require('./bear'),
-    userApi = require('./user'),
+var userApi = require('./user'),
     deviceApi = require('./device'),
     spotApi = require('./spot');
 

@@ -14,6 +14,7 @@ var UserSchema = new Schema({
     provider: {
         type: String, default: 'local'
     },
+    admin: {type: Boolean, default: false },
     devices : [{ type: Schema.Types.ObjectId, ref: 'Device' }]
 });
 

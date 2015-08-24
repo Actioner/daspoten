@@ -33,6 +33,7 @@ router.route('/')
         self.device.code = req.body.code;  // set the devices name (comes from the request)
         self.device.user = req.user;
         self.device.parking = req.body.parking;
+        self.device.type = req.body.type || 'driver';
         self.device.bearing = 0;
 
         validator.validate(self.device,
@@ -87,6 +88,8 @@ router.route('/:id')
     .put(function(req, res) {
         var self = this;
         self.device = req.device;
+        self.device.type = req.body.type || self.device.type;
+
         self.deviceLocation = new Location.DeviceLocation();
         deviceLocation.when = Date.now();
         deviceLocation.coordinates = [req.body.lng, req.body.lat];
