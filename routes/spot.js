@@ -4,11 +4,13 @@ var config = require('../app/config/config');
 var Spot = require('../app/models/spot');
 var User = require('../app/models/user');
 var Device = require('../app/models/device');
+var Util = require('../app/components/util');
 var SpotValidator = require('../app/validators/spot'),
     LocationValidator = require('../app/validators/location');
 
 var validator = new SpotValidator();
 var locationValidator = new LocationValidator();
+var util = new Util();
 
 router.param('id', function(req, res, next, id) {
     Spot.findById(id, function(err, spot) {
@@ -53,9 +55,14 @@ router.route('/')
     })
     // get all the spots (accessed at GET http://localhost:8080/api/spots)
     .get(function(req, res) {
-        var lat = req.query.lat || 0;
-        var lng = req.query.lng || 0;
+        var lat = parseFloat(req.query.lat || 0);
+        var lng = parseFloat(req.query.lng || 0);
+        var nwlat = parseFloat(req.query.nwlat || 0);
+        var nwlng = parseFloat(req.query.nwlng || 0);
 
+        var maxDistance = util.getDistanceFromLatLonInMt(lat,lng,nwlat,nwlng);
+
+        console.log(maxDistance);
         Spot
             .find(
             {
@@ -63,7 +70,7 @@ router.route('/')
                 { $near :
                     {
                         $geometry: { type: "Point",  coordinates: [ lng, lat ] },
-                        $maxDistance: config.get("location:spotNearInMeters")
+                        $maxDistance: maxDistance
                     }
                 }
             })

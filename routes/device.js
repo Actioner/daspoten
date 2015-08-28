@@ -53,8 +53,13 @@ router.route('/')
     })
     // get all the devices (accessed at GET http://localhost:8080/api/devices)
     .get(function(req, res) {
-        var lat = req.query.lat || 0;
-        var lng = req.query.lng || 0;
+        var lat = parseFloat(req.query.lat || 0);
+        var lng = parseFloat(req.query.lng || 0);
+        var nwlat = parseFloat(req.query.nwlat || 0);
+        var nwlng = parseFloat(req.query.nwlng || 0);
+
+        var maxDistance = util.getDistanceFromLatLonInMt(lat,lng,nwlat,nwlng);
+
 
         Device.
             find(
@@ -63,7 +68,7 @@ router.route('/')
                 { $near :
                     {
                         $geometry: { type: "Point",  coordinates: [ lng, lat ] },
-                        $maxDistance: config.get("location:deviceNearInMeters")
+                        $maxDistance: maxDistance
                     }
                 }
             }).
