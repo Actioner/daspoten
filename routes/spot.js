@@ -62,7 +62,6 @@ router.route('/')
 
         var maxDistance = util.getDistanceFromLatLonInMt(lat,lng,nwlat,nwlng);
 
-        console.log(maxDistance);
         Spot
             .find(
             {
