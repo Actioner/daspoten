@@ -89,6 +89,7 @@ router.route('/:id')
         var self = this;
         self.device = req.device;
         self.device.type = req.body.type || self.device.type;
+        self.device.parking = req.body.parking || self.device.parking;
 
         self.deviceLocation = new Location.DeviceLocation();
         deviceLocation.when = Date.now();
